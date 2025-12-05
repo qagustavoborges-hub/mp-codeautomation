@@ -1,5 +1,5 @@
 const express = require('express');
-const { verifyToken } = require('../middleware/auth');
+const { verifyToken, requireRole } = require('../middleware/auth');
 const { logAccess } = require('../middleware/auth');
 const { getDatabase } = require('../database/init');
 
@@ -14,13 +14,14 @@ router.get('/', (req, res) => {
     const db = getDatabase();
     const { limit = 50, offset = 0, airline } = req.query;
 
+    // Usuários comuns veem todos os códigos, admins também veem todos
     let query = `
       SELECT vc.*, u.username 
       FROM verification_codes vc
       LEFT JOIN users u ON vc.user_id = u.id
-      WHERE vc.is_active = 1 AND vc.user_id = ?
+      WHERE vc.is_active = 1
     `;
-    const params = [req.user.id];
+    const params = [];
 
     if (airline) {
       query += ' AND vc.airline = ?';
@@ -124,18 +125,18 @@ router.get('/stats/summary', (req, res) => {
         COUNT(*) as count,
         MAX(extracted_at) as last_extracted
        FROM verification_codes
-       WHERE is_active = 1 AND user_id = ?
+       WHERE is_active = 1
        GROUP BY airline
        ORDER BY count DESC`,
-      [req.user.id],
+      [],
       (err, stats) => {
         if (err) {
           return res.status(500).json({ error: 'Erro ao buscar estatísticas' });
         }
 
         db.get(
-          'SELECT COUNT(*) as total FROM verification_codes WHERE is_active = 1 AND user_id = ?',
-          [req.user.id],
+          'SELECT COUNT(*) as total FROM verification_codes WHERE is_active = 1',
+          [],
           (err2, total) => {
             if (err2) {
               return res.status(500).json({ error: 'Erro ao buscar total' });
@@ -156,15 +157,15 @@ router.get('/stats/summary', (req, res) => {
   }
 });
 
-// Limpar todos os códigos (apenas do usuário atual)
-router.delete('/clear', (req, res) => {
+// Limpar todos os códigos (apenas admin)
+router.delete('/clear', requireRole('admin'), (req, res) => {
   try {
     const db = getDatabase();
     const userId = req.user.id;
 
     db.run(
-      'DELETE FROM verification_codes WHERE user_id = ?',
-      [userId],
+      'DELETE FROM verification_codes',
+      [],
       function(err) {
         if (err) {
           console.error('Erro ao limpar códigos:', err);
@@ -174,7 +175,7 @@ router.delete('/clear', (req, res) => {
         // Registrar acesso
         logAccess(userId, null, 'CLEAR_ALL_CODES', req);
 
-        console.log(`Códigos limpos para usuário ${userId}. Total removido: ${this.changes}`);
+        console.log(`Todos os códigos foram limpos por admin ${userId}. Total removido: ${this.changes}`);
         res.json({ 
           message: 'Todos os códigos foram removidos com sucesso',
           deleted: this.changes

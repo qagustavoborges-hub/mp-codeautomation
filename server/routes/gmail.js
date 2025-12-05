@@ -1,5 +1,5 @@
 const express = require('express');
-const { verifyToken } = require('../middleware/auth');
+const { verifyToken, requireRole } = require('../middleware/auth');
 const { getAuthUrl, getTokensFromCode, saveTokens } = require('../config/gmail');
 const { processEmails } = require('../services/emailService');
 
@@ -41,8 +41,8 @@ router.get('/oauth/callback', async (req, res) => {
 // Todas as outras rotas requerem autenticação
 router.use(verifyToken);
 
-// Obter URL de autenticação OAuth
-router.get('/oauth/url', (req, res) => {
+// Obter URL de autenticação OAuth (apenas admin)
+router.get('/oauth/url', requireRole('admin'), (req, res) => {
   try {
     const { getAuthUrl } = require('../config/gmail');
     // Incluir userId no state para recuperar no callback
@@ -55,8 +55,8 @@ router.get('/oauth/url', (req, res) => {
 });
 
 
-// Processar emails manualmente
-router.post('/process', async (req, res) => {
+// Processar emails manualmente (apenas admin)
+router.post('/process', requireRole('admin'), async (req, res) => {
   try {
     const { onlyNew = false } = req.body; // Se true, processa apenas emails novos
     const result = await processEmails(req.user.id, onlyNew);
@@ -73,8 +73,8 @@ router.post('/process', async (req, res) => {
   }
 });
 
-// Desconectar conta Gmail (limpar tokens)
-router.delete('/disconnect', async (req, res) => {
+// Desconectar conta Gmail (limpar tokens) - apenas admin
+router.delete('/disconnect', requireRole('admin'), async (req, res) => {
   try {
     const { getDatabase } = require('../database/init');
     const db = getDatabase();
@@ -103,7 +103,7 @@ router.delete('/disconnect', async (req, res) => {
 });
 
 // Desconectar todas as contas (admin) - útil para limpar e reconectar com conta específica
-router.delete('/disconnect-all', async (req, res) => {
+router.delete('/disconnect-all', requireRole('admin'), async (req, res) => {
   try {
     const { getDatabase } = require('../database/init');
     const db = getDatabase();

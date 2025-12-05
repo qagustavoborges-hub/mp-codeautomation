@@ -53,7 +53,7 @@
                   {{ email }}
                 </option>
               </select>
-              <button class="btn btn-danger" @click="handleClearAndReprocess" :disabled="clearing">
+              <button v-if="isAdmin" class="btn btn-danger" @click="handleClearAndReprocess" :disabled="clearing">
                 {{ clearing ? 'Limpando...' : 'Limpar e Reprocessar' }}
               </button>
             </div>
@@ -155,6 +155,9 @@ export default {
         }
       });
       return Array.from(emails).sort();
+    },
+    isAdmin() {
+      return this.user && this.user.role === 'admin';
     }
   },
   methods: {

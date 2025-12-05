@@ -15,14 +15,14 @@
       </p>
       <div class="actions">
         <button 
-          v-if="!hasCodes" 
+          v-if="!hasCodes && isAdmin" 
           class="btn btn-primary" 
           @click="handleProcessEmails" 
           :disabled="processing"
         >
           {{ processing ? 'Processando...' : 'Processar Smiles & LATAM' }}
         </button>
-        <button class="btn btn-secondary" @click="disconnect">
+        <button v-if="isAdmin" class="btn btn-secondary" @click="disconnect">
           Desconectar
         </button>
       </div>
@@ -33,9 +33,10 @@
         <span class="status-icon">●</span> Não Conectado
       </div>
       <p class="status-info">
-        Conecte sua conta Gmail para começar a monitorar emails de spam
+        <span v-if="isAdmin">Conecte sua conta Gmail para começar a monitorar emails de spam</span>
+        <span v-else>Aguardando conexão Gmail pelo administrador</span>
       </p>
-      <button class="btn btn-primary" @click="connectGmail">
+      <button v-if="isAdmin" class="btn btn-primary" @click="connectGmail">
         Conectar Gmail
       </button>
     </div>
@@ -54,9 +55,12 @@ export default {
     };
   },
   computed: {
-    ...mapState(['gmailStatus', 'loading', 'codes']),
+    ...mapState(['gmailStatus', 'loading', 'codes', 'user']),
     hasCodes() {
       return this.codes && this.codes.length > 0;
+    },
+    isAdmin() {
+      return this.user && this.user.role === 'admin';
     }
   },
   props: {

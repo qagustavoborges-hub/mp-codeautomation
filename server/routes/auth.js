@@ -5,55 +5,8 @@ const { generateToken, verifyToken } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Registrar novo usuário
-router.post('/register', async (req, res) => {
-  try {
-    const { username, password, email } = req.body;
-
-    if (!username || !password) {
-      return res.status(400).json({ error: 'Username e senha são obrigatórios' });
-    }
-
-    if (password.length < 6) {
-      return res.status(400).json({ error: 'Senha deve ter no mínimo 6 caracteres' });
-    }
-
-    const db = getDatabase();
-    const passwordHash = await bcrypt.hash(password, 10);
-
-    db.run(
-      'INSERT INTO users (username, password_hash, email) VALUES (?, ?, ?)',
-      [username, passwordHash, email || null],
-      function(err) {
-        if (err) {
-          if (err.message.includes('UNIQUE constraint')) {
-            return res.status(409).json({ error: 'Username já existe' });
-          }
-          return res.status(500).json({ error: 'Erro ao criar usuário' });
-        }
-
-        const token = generateToken({
-          id: this.lastID,
-          username,
-          role: 'user'
-        });
-
-        res.status(201).json({
-          message: 'Usuário criado com sucesso',
-          token,
-          user: {
-            id: this.lastID,
-            username,
-            email
-          }
-        });
-      }
-    );
-  } catch (error) {
-    console.error('Erro no registro:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
+// Registrar novo usuário - REMOVIDO: Usuários só podem ser criados diretamente no banco de dados
+// Apenas admins podem ser criados manualmente no banco
 
 // Login
 router.post('/login', (req, res) => {

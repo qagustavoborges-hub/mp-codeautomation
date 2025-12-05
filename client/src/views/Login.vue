@@ -4,32 +4,7 @@
       <h1>Sistema Gmail Verificação</h1>
       <p class="subtitle">Monitore códigos de verificação de companhias aéreas</p>
 
-      <div v-if="isRegister" class="form-container">
-        <h2>Registrar</h2>
-        <form @submit.prevent="handleRegister">
-          <div class="input-group">
-            <label>Username</label>
-            <input v-model="registerForm.username" type="text" required />
-          </div>
-          <div class="input-group">
-            <label>Email (opcional)</label>
-            <input v-model="registerForm.email" type="email" />
-          </div>
-          <div class="input-group">
-            <label>Senha</label>
-            <input v-model="registerForm.password" type="password" required minlength="6" />
-          </div>
-          <button type="submit" class="btn btn-primary" :disabled="loading">
-            {{ loading ? 'Registrando...' : 'Registrar' }}
-          </button>
-        </form>
-        <p class="switch-form">
-          Já tem uma conta? 
-          <a href="#" @click.prevent="isRegister = false">Fazer login</a>
-        </p>
-      </div>
-
-      <div v-else class="form-container">
+      <div class="form-container">
         <h2>Login</h2>
         <form @submit.prevent="handleLogin">
           <div class="input-group">
@@ -44,9 +19,8 @@
             {{ loading ? 'Entrando...' : 'Entrar' }}
           </button>
         </form>
-        <p class="switch-form">
-          Não tem uma conta? 
-          <a href="#" @click.prevent="isRegister = true">Registrar</a>
+        <p class="info-text">
+          Contate o administrador para criar uma conta.
         </p>
       </div>
     </div>
@@ -60,14 +34,8 @@ export default {
   name: 'Login',
   data() {
     return {
-      isRegister: false,
       loginForm: {
         username: '',
-        password: ''
-      },
-      registerForm: {
-        username: '',
-        email: '',
         password: ''
       }
     };
@@ -76,15 +44,9 @@ export default {
     ...mapState(['loading', 'error'])
   },
   methods: {
-    ...mapActions(['login', 'register']),
+    ...mapActions(['login']),
     async handleLogin() {
       const result = await this.login(this.loginForm);
-      if (result.success) {
-        this.$router.push('/dashboard');
-      }
-    },
-    async handleRegister() {
-      const result = await this.register(this.registerForm);
       if (result.success) {
         this.$router.push('/dashboard');
       }
@@ -151,8 +113,12 @@ export default {
   font-weight: 500;
 }
 
-.switch-form a:hover {
-  text-decoration: underline;
+.info-text {
+  text-align: center;
+  margin-top: 20px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-style: italic;
 }
 
 .btn {

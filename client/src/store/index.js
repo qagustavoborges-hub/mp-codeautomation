@@ -87,26 +87,7 @@ export default createStore({
         commit('SET_LOADING', false);
       }
     },
-    async register({ commit }, { username, password, email }) {
-      try {
-        commit('SET_LOADING', true);
-        commit('SET_ERROR', null);
-        
-        const response = await api.post('/auth/register', { username, password, email });
-        const { token, user } = response.data;
-        
-        commit('SET_TOKEN', token);
-        commit('SET_USER', user);
-        
-        return { success: true };
-      } catch (error) {
-        const message = error.response?.data?.error || 'Erro ao registrar';
-        commit('SET_ERROR', message);
-        return { success: false, error: message };
-      } finally {
-        commit('SET_LOADING', false);
-      }
-    },
+    // Registro removido - usuários só podem ser criados diretamente no banco de dados
     async logout({ commit }) {
       commit('LOGOUT');
     },
