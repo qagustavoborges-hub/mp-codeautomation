@@ -1,0 +1,42 @@
+# Dependências
+node_modules/
+client/node_modules/
+
+# Ambiente
+.env
+.env.local
+.env.*.local
+
+# Banco de dados
+data/
+*.sqlite
+*.sqlite3
+*.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build
+client/dist/
+client/build/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporários
+*.tmp
+*.temp
+.cache/
+
